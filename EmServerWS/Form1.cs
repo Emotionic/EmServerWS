@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace EmServerWS
 {
@@ -23,6 +26,9 @@ namespace EmServerWS
 
             this.Size = Normal;
 
+            // Get IP
+            lab_IP.Text = GetIP().ToString();
+
             // Generate pin
             var rnd = new Random(Environment.TickCount + 810);
             int pin = 0;
@@ -31,7 +37,7 @@ namespace EmServerWS
                 pin *= 10;
                 pin += rnd.Next(0, 10);
             }
-            lab_Pin.Text = pin.ToString();
+            lab_Pin.Text = pin.ToString("0000");
 
             // Start server
             _server = new Server(pin);
@@ -50,10 +56,45 @@ namespace EmServerWS
 
         }
 
-        private readonly Size Normal = new Size(303, 247);
-        private readonly Size LogMode = new Size(574, 439);
+        private readonly Size Normal = new Size(383, 357);
+        private readonly Size LogMode = new Size(700, 574);
 
         private Server _server;
+
+        private IPAddress GetIP()
+        {
+            var ip = IPAddress.None;
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+            var hit = false;
+
+            foreach (var adapter in interfaces)
+            {
+                if (adapter.OperationalStatus != OperationalStatus.Up)
+                {
+                    continue;
+                }
+
+                var properties = adapter.GetIPProperties();
+
+                foreach (var unicast in properties.UnicastAddresses)
+                {
+                    if (unicast.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(unicast.Address))
+                    {
+                        // IPv4アドレス
+                        ip = unicast.Address;
+                        if (adapter.Name.Contains("イーサネット") || adapter.Name.Contains("ワイヤレス"))
+                        {
+                            hit = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (hit) break;
+            }
+
+            return ip;
+        }
 
         private void check_showLog_CheckedChanged(object sender, EventArgs e)
         {
@@ -106,11 +147,6 @@ namespace EmServerWS
                 panel_debug.Visible = false;
             }
 
-        }
-
-        private void check_Calibrated_CheckedChanged(object sender, EventArgs e)
-        {
-            _server.isCalibrated = check_Calibrated.Checked;
         }
 
     }

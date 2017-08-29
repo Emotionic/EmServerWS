@@ -53,7 +53,6 @@ namespace EmServerWS
 
         public Detectable<int> Connections { get; set; } // 接続数
         public Detectable<string> LatestLog { get; set; } // 最新のログ
-        public bool isCalibrated = false; // キャリブレーション済みかどうか
 
         private void WriteLog(string _log)
         {
@@ -103,11 +102,6 @@ namespace EmServerWS
                         var rcv = buff.Take(ret.Count).ToArray();
                         var msg = Encoding.UTF8.GetString(rcv);
                         var addrs = msg.Split()[0].Split('+');
-
-                        if (msg.Split().Count() > 1 && msg.Split()[1] == "CALIB_OK")
-                        {
-                            isCalibrated = true;
-                        }
 
                         WriteLog(string.Format("**WS** [{0}] Received : {1}", DateTime.Now.ToString(), remoteIP.ToString()));
                         WriteLog(string.Format("**WS** Message = {0}", msg));
@@ -194,12 +188,7 @@ namespace EmServerWS
 
                 case "/check":
                     /// サーバ起動チェック
-                    if (!isCalibrated)
-                    {
-                        // 未キャリブレート
-                        msg = "uncalibrated";
-                    }
-                    else if (req.RemoteEndPoint.Address == _performer_ip)
+                    if (req.RemoteEndPoint.Address == _performer_ip)
                     {
                         // すでに認証済み
                         msg = "authenticated";

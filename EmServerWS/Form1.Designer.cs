@@ -39,7 +39,10 @@
             this.check_debug = new System.Windows.Forms.CheckBox();
             this.panel_debug = new System.Windows.Forms.Panel();
             this.lab_desc3 = new System.Windows.Forms.Label();
-            this.check_Calibrated = new System.Windows.Forms.CheckBox();
+            this.lab_desc4 = new System.Windows.Forms.Label();
+            this.lab_desc5 = new System.Windows.Forms.Label();
+            this.lab_IP = new System.Windows.Forms.Label();
+            this.lab_desc6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picboc_Emotionic)).BeginInit();
             this.panel_debug.SuspendLayout();
             this.SuspendLayout();
@@ -47,7 +50,7 @@
             // picboc_Emotionic
             // 
             this.picboc_Emotionic.Image = ((System.Drawing.Image)(resources.GetObject("picboc_Emotionic.Image")));
-            this.picboc_Emotionic.Location = new System.Drawing.Point(12, 12);
+            this.picboc_Emotionic.Location = new System.Drawing.Point(54, 12);
             this.picboc_Emotionic.Name = "picboc_Emotionic";
             this.picboc_Emotionic.Size = new System.Drawing.Size(260, 70);
             this.picboc_Emotionic.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -58,7 +61,7 @@
             // 
             this.lab_Pin.AutoSize = true;
             this.lab_Pin.Font = new System.Drawing.Font("メイリオ", 27.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.lab_Pin.Location = new System.Drawing.Point(86, 127);
+            this.lab_Pin.Location = new System.Drawing.Point(127, 216);
             this.lab_Pin.Name = "lab_Pin";
             this.lab_Pin.Size = new System.Drawing.Size(116, 55);
             this.lab_Pin.TabIndex = 1;
@@ -66,29 +69,29 @@
             // 
             // tb_Log
             // 
-            this.tb_Log.Location = new System.Drawing.Point(13, 211);
+            this.tb_Log.Location = new System.Drawing.Point(12, 344);
             this.tb_Log.Multiline = true;
             this.tb_Log.Name = "tb_Log";
             this.tb_Log.ReadOnly = true;
             this.tb_Log.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tb_Log.Size = new System.Drawing.Size(530, 179);
+            this.tb_Log.Size = new System.Drawing.Size(659, 179);
             this.tb_Log.TabIndex = 2;
             // 
             // lab_desc1
             // 
             this.lab_desc1.AutoSize = true;
             this.lab_desc1.Font = new System.Drawing.Font("MS UI Gothic", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.lab_desc1.Location = new System.Drawing.Point(12, 92);
+            this.lab_desc1.Location = new System.Drawing.Point(51, 95);
             this.lab_desc1.Name = "lab_desc1";
-            this.lab_desc1.Size = new System.Drawing.Size(267, 26);
+            this.lab_desc1.Size = new System.Drawing.Size(263, 26);
             this.lab_desc1.TabIndex = 3;
-            this.lab_desc1.Text = "開始するには、下のPINをアプリで入力してください。\r\nPIN:";
+            this.lab_desc1.Text = "Emotionicアプリを起動し、以下の情報を入力して\r\nセットアップを実行してください。";
             this.lab_desc1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lab_WSCount
             // 
             this.lab_WSCount.AutoSize = true;
-            this.lab_WSCount.Location = new System.Drawing.Point(314, 39);
+            this.lab_WSCount.Location = new System.Drawing.Point(401, 37);
             this.lab_WSCount.Name = "lab_WSCount";
             this.lab_WSCount.Size = new System.Drawing.Size(57, 12);
             this.lab_WSCount.TabIndex = 4;
@@ -97,7 +100,7 @@
             // lab_desc2
             // 
             this.lab_desc2.AutoSize = true;
-            this.lab_desc2.Location = new System.Drawing.Point(295, 14);
+            this.lab_desc2.Location = new System.Drawing.Point(382, 12);
             this.lab_desc2.Name = "lab_desc2";
             this.lab_desc2.Size = new System.Drawing.Size(41, 12);
             this.lab_desc2.TabIndex = 5;
@@ -106,7 +109,7 @@
             // check_showLog
             // 
             this.check_showLog.AutoSize = true;
-            this.check_showLog.Location = new System.Drawing.Point(15, 183);
+            this.check_showLog.Location = new System.Drawing.Point(12, 292);
             this.check_showLog.Name = "check_showLog";
             this.check_showLog.Size = new System.Drawing.Size(76, 16);
             this.check_showLog.TabIndex = 6;
@@ -117,7 +120,7 @@
             // check_debug
             // 
             this.check_debug.AutoSize = true;
-            this.check_debug.Location = new System.Drawing.Point(212, 183);
+            this.check_debug.Location = new System.Drawing.Point(303, 292);
             this.check_debug.Name = "check_debug";
             this.check_debug.Size = new System.Drawing.Size(60, 16);
             this.check_debug.TabIndex = 7;
@@ -128,9 +131,8 @@
             // 
             // panel_debug
             // 
-            this.panel_debug.Controls.Add(this.check_Calibrated);
             this.panel_debug.Controls.Add(this.lab_desc3);
-            this.panel_debug.Location = new System.Drawing.Point(285, 99);
+            this.panel_debug.Location = new System.Drawing.Point(422, 216);
             this.panel_debug.Name = "panel_debug";
             this.panel_debug.Size = new System.Drawing.Size(200, 100);
             this.panel_debug.TabIndex = 8;
@@ -145,22 +147,56 @@
             this.lab_desc3.TabIndex = 6;
             this.lab_desc3.Text = "<デバッグ>";
             // 
-            // check_Calibrated
+            // lab_desc4
             // 
-            this.check_Calibrated.AutoSize = true;
-            this.check_Calibrated.Location = new System.Drawing.Point(31, 28);
-            this.check_Calibrated.Name = "check_Calibrated";
-            this.check_Calibrated.Size = new System.Drawing.Size(153, 16);
-            this.check_Calibrated.TabIndex = 7;
-            this.check_Calibrated.Text = "キャリブレーション済みにする";
-            this.check_Calibrated.UseVisualStyleBackColor = true;
-            this.check_Calibrated.CheckedChanged += new System.EventHandler(this.check_Calibrated_CheckedChanged);
+            this.lab_desc4.AutoSize = true;
+            this.lab_desc4.Font = new System.Drawing.Font("メイリオ", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lab_desc4.Location = new System.Drawing.Point(23, 212);
+            this.lab_desc4.Name = "lab_desc4";
+            this.lab_desc4.Size = new System.Drawing.Size(65, 28);
+            this.lab_desc4.TabIndex = 9;
+            this.lab_desc4.Text = "PIN : ";
+            this.lab_desc4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lab_desc5
+            // 
+            this.lab_desc5.AutoSize = true;
+            this.lab_desc5.Font = new System.Drawing.Font("メイリオ", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lab_desc5.Location = new System.Drawing.Point(12, 132);
+            this.lab_desc5.Name = "lab_desc5";
+            this.lab_desc5.Size = new System.Drawing.Size(127, 28);
+            this.lab_desc5.TabIndex = 10;
+            this.lab_desc5.Text = "IPアドレス : ";
+            this.lab_desc5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lab_IP
+            // 
+            this.lab_IP.AutoSize = true;
+            this.lab_IP.Font = new System.Drawing.Font("メイリオ", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lab_IP.Location = new System.Drawing.Point(19, 160);
+            this.lab_IP.Name = "lab_IP";
+            this.lab_IP.Size = new System.Drawing.Size(323, 52);
+            this.lab_IP.TabIndex = 11;
+            this.lab_IP.Text = "000.000.000.000";
+            // 
+            // lab_desc6
+            // 
+            this.lab_desc6.AutoSize = true;
+            this.lab_desc6.Location = new System.Drawing.Point(10, 324);
+            this.lab_desc6.Name = "lab_desc6";
+            this.lab_desc6.Size = new System.Drawing.Size(35, 12);
+            this.lab_desc6.TabIndex = 12;
+            this.lab_desc6.Text = "<ログ>";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(560, 399);
+            this.ClientSize = new System.Drawing.Size(680, 531);
+            this.Controls.Add(this.lab_desc6);
+            this.Controls.Add(this.lab_IP);
+            this.Controls.Add(this.lab_desc5);
+            this.Controls.Add(this.lab_desc4);
             this.Controls.Add(this.panel_debug);
             this.Controls.Add(this.check_debug);
             this.Controls.Add(this.check_showLog);
@@ -196,8 +232,11 @@
         private System.Windows.Forms.CheckBox check_showLog;
         private System.Windows.Forms.CheckBox check_debug;
         private System.Windows.Forms.Panel panel_debug;
-        private System.Windows.Forms.CheckBox check_Calibrated;
         private System.Windows.Forms.Label lab_desc3;
+        private System.Windows.Forms.Label lab_desc4;
+        private System.Windows.Forms.Label lab_desc5;
+        private System.Windows.Forms.Label lab_IP;
+        private System.Windows.Forms.Label lab_desc6;
     }
 }
 

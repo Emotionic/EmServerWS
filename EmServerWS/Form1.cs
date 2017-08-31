@@ -35,7 +35,7 @@ namespace EmServerWS
             picBox_QR.Image = QR_Performer;
 
             // Start server
-            _server = new Server(pin, QR_Audience);
+            _server = new Server(pin, lab_IP.Text, QR_Audience);
 
             _server.LatestLog.mChanged += value =>
             {
@@ -48,6 +48,11 @@ namespace EmServerWS
             };
 
             _server.Start();
+
+            // EmServer(Unity)の起動
+            var ps = new System.Diagnostics.Process();
+            ps.StartInfo.FileName = Environment.CurrentDirectory + @"\EmServer\EmServer.exe";
+            ps.Start();
 
         }
 
@@ -113,11 +118,11 @@ namespace EmServerWS
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            var dlg = MessageBox.Show("Emotionic Server WSを終了しますか？\n(Emotionic Server Unityも同時終了します。)", "終了", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            var dlg = MessageBox.Show("EmServerWSを終了しますか？\n(EmServer(Unity)も同時終了します。)", "終了", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             if (dlg == DialogResult.OK)
             {
                 //EmServerのプロセスを取得
-                var ps = System.Diagnostics.Process.GetProcessesByName("Emotionic");
+                var ps = System.Diagnostics.Process.GetProcessesByName("EmServer");
 
                 foreach (var p in ps)
                 {

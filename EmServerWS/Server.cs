@@ -21,10 +21,11 @@ namespace EmServerWS
 {
     public class Server
     {
-        public Server(int _pin, Bitmap _qr, int _port = 80)
+        public Server(int _pin, string _ip, Bitmap _qr, int _port = 80)
         {
             _client = new List<WebSocket>();
             pin = _pin;
+            ip = _ip;
             QR = _qr;
             port = _port;
 
@@ -69,6 +70,7 @@ namespace EmServerWS
 
         private int pin { get; set; }
         private int port { get; set; }
+        private string ip { get; set; }
         private Bitmap QR;
 
         private List<WebSocket> _client { get; set; }
@@ -100,6 +102,13 @@ namespace EmServerWS
             {
                 EmServer = ws;
                 Debug.WriteLine("EmServer connected.");
+
+                // IPアドレスの通知
+                var ip_notice = "SERV\nIP\n" + ip + "\n";
+                await EmServer.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(ip_notice)),
+                                         WebSocketMessageType.Text,
+                                         true,
+                                         System.Threading.CancellationToken.None);
 
                 // QRの送信
                 var img = new byte[QR.Width * QR.Height * 3];

@@ -35,7 +35,7 @@ namespace EmServerWS
             picBox_QR.Image = QR_Performer;
 
             // Start server
-            _server = new Server(pin);
+            _server = new Server(pin, QR_Performer);
 
             _server.LatestLog.mChanged += value =>
             {

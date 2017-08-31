@@ -5,19 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-using System.Text.RegularExpressions;
-
 using System.Net;
 using System.Net.WebSockets;
+using System.Diagnostics;
+
+// For Regex
+using System.Text.RegularExpressions;
+
+// For QR
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace EmServerWS
 {
     public class Server
     {
-        public Server(int _pin, int _port = 80)
+        public Server(int _pin, Bitmap _qr, int _port = 80)
         {
             _client = new List<WebSocket>();
             pin = _pin;
+            QR = _qr;
             port = _port;
 
             Connections = new Detectable<int>();
@@ -61,6 +69,8 @@ namespace EmServerWS
 
         private int pin { get; set; }
         private int port { get; set; }
+        private Bitmap QR;
+
         private List<WebSocket> _client { get; set; }
         private WebSocket performer = null;
         private IPAddress _performer_ip = null;
@@ -81,11 +91,29 @@ namespace EmServerWS
             _client.Add(ws);
             Connections.Value = _client.Count;
 
-            if (_performer_ip == remoteIP)
+            if (_performer_ip != null && _performer_ip.ToString() == remoteIP.ToString())
+            {
                 performer = ws;
+                Debug.WriteLine("Performer client connected.");
+            }
             else if (IPAddress.IsLoopback(remoteIP))
+            {
                 EmServer = ws;
+                Debug.WriteLine("EmServer connected.");
 
+                // QRの送信
+                var img = new byte[QR.Width * QR.Height * 3];
+                var bits = QR.LockBits(new Rectangle(0, 0, QR.Width, QR.Height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                Marshal.Copy(bits.Scan0, img, 0, img.Length);
+                QR.UnlockBits(bits);
+
+                await EmServer.SendAsync(new ArraySegment<byte>(img),
+                                         WebSocketMessageType.Binary,
+                                         true,
+                                         System.Threading.CancellationToken.None);
+
+            }
+                
             /// WebSocketの送受信ループ
             while (ws.State == WebSocketState.Open)
             {
@@ -151,10 +179,11 @@ namespace EmServerWS
                         break;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     /// 例外 クライアントが異常終了
                     WriteLog(string.Format("**WS** [{0}] Session Abort : {1}", DateTime.Now.ToString(), remoteIP.ToString()));
+                    Debug.WriteLine(ex);
                     break;
                 }
             }
@@ -217,6 +246,7 @@ namespace EmServerWS
                     if (performer == null && int.TryParse(req_pin, out req_pin_int) && req_pin_int == pin)
                     {
                         _performer_ip = req.RemoteEndPoint.Address;
+                        Debug.WriteLine("Performer IP : " + _performer_ip);
                         msg = "ok";
                     }
                     else

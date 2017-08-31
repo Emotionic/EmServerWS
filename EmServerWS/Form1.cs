@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Windows.Forms;
+
+using ZXing;
+using ZXing.QrCode;
 
 namespace EmServerWS
 {
@@ -18,13 +15,6 @@ namespace EmServerWS
         public Form1()
         {
             InitializeComponent();
-
-            // デバッグ用
-#if DEBUG
-            check_debug.Visible = true;
-#endif
-
-            this.Size = Normal;
 
             // Get IP
             lab_IP.Text = GetIP().ToString();
@@ -38,6 +28,11 @@ namespace EmServerWS
                 pin += rnd.Next(0, 10);
             }
             lab_Pin.Text = pin.ToString("0000");
+
+            // Create 
+            QR_Performer = CreateQR(true, lab_IP.Text, lab_Pin.Text);
+            QR_Audience = CreateQR(false, lab_IP.Text, lab_Pin.Text);
+            picBox_QR.Image = QR_Performer;
 
             // Start server
             _server = new Server(pin);
@@ -56,10 +51,9 @@ namespace EmServerWS
 
         }
 
-        private readonly Size Normal = new Size(383, 357);
-        private readonly Size LogMode = new Size(700, 574);
-
         private Server _server;
+        private Bitmap QR_Performer;
+        private Bitmap QR_Audience;
 
         private IPAddress GetIP()
         {
@@ -96,17 +90,25 @@ namespace EmServerWS
             return ip;
         }
 
-        private void check_showLog_CheckedChanged(object sender, EventArgs e)
+        private Bitmap CreateQR(bool _isPerformer, string _ip, string _pin)
         {
-            if (check_showLog.Checked)
-            {
-                this.Size = LogMode;
-            }
-            else
-            {
-                this.Size = Normal;
-            }
+            var qrdata = "{";
+            qrdata += "\"isPerformer\" : " + (_isPerformer ? "true" : "false") + ", ";
+            qrdata += "\"IP\" : \"" + lab_IP.Text + "\", ";
+            qrdata += "\"PIN\" : \"" + (_isPerformer ? lab_Pin.Text : "") + "\" ";
+            qrdata += "}";
 
+            var writer = new BarcodeWriter
+            {
+                Format = BarcodeFormat.QR_CODE,
+                Options = new QrCodeEncodingOptions
+                {
+                    Width = 256,
+                    Height = 256
+                }
+            };
+
+            return writer.Write(qrdata);
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -115,7 +117,7 @@ namespace EmServerWS
             if (dlg == DialogResult.OK)
             {
                 //EmServerのプロセスを取得
-                var ps = System.Diagnostics.Process.GetProcessesByName("EmServerUnity");
+                var ps = System.Diagnostics.Process.GetProcessesByName("Emotionic");
 
                 foreach (var p in ps)
                 {
@@ -134,19 +136,15 @@ namespace EmServerWS
             }
         }
 
-        private void check_debug_CheckedChanged(object sender, EventArgs e)
+        private void check_AudienceQR_CheckedChanged(object sender, EventArgs e)
         {
-            if (check_debug.Checked)
+            if (check_AudienceQR.Checked)
             {
-                this.Size = LogMode;
-                panel_debug.Visible = true;
-            }
-            else
+                picBox_QR.Image = QR_Audience;
+            } else
             {
-                this.Size = Normal;
-                panel_debug.Visible = false;
+                picBox_QR.Image = QR_Performer;
             }
-
         }
 
     }

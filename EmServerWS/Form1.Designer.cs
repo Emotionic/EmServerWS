@@ -41,7 +41,7 @@
             this.lab_desc6 = new System.Windows.Forms.Label();
             this.picBox_QR = new System.Windows.Forms.PictureBox();
             this.check_AudienceQR = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lab_descQR = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picboc_Emotionic)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBox_QR)).BeginInit();
             this.SuspendLayout();
@@ -166,21 +166,21 @@
             this.check_AudienceQR.UseVisualStyleBackColor = true;
             this.check_AudienceQR.CheckedChanged += new System.EventHandler(this.check_AudienceQR_CheckedChanged);
             // 
-            // label1
+            // lab_descQR
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(382, 53);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 12);
-            this.label1.TabIndex = 14;
-            this.label1.Text = "<パフォーマー用QR>";
+            this.lab_descQR.AutoSize = true;
+            this.lab_descQR.Location = new System.Drawing.Point(382, 53);
+            this.lab_descQR.Name = "lab_descQR";
+            this.lab_descQR.Size = new System.Drawing.Size(100, 12);
+            this.lab_descQR.TabIndex = 14;
+            this.lab_descQR.Text = "<パフォーマー用QR>";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(680, 549);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lab_descQR);
             this.Controls.Add(this.check_AudienceQR);
             this.Controls.Add(this.picBox_QR);
             this.Controls.Add(this.lab_desc6);
@@ -221,7 +221,7 @@
         private System.Windows.Forms.Label lab_desc6;
         private System.Windows.Forms.PictureBox picBox_QR;
         private System.Windows.Forms.CheckBox check_AudienceQR;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lab_descQR;
     }
 }
 

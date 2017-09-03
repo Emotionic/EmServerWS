@@ -137,49 +137,69 @@ namespace EmServerWS
                     if (ret.MessageType == WebSocketMessageType.Text)
                     {
                         var rcv = buff.Take(ret.Count).ToArray();
-                        var msg = Encoding.UTF8.GetString(rcv);
-                        var addrs = msg.Split()[0].Split('+');
+                        var _msg = Encoding.UTF8.GetString(rcv);
+                        var msg = _msg.Split();
 
                         WriteLog(string.Format("**WS** [{0}] Received : {1}", DateTime.Now.ToString(), remoteIP.ToString()));
-                        WriteLog(string.Format("**WS** Message = {0}", msg));
+                        WriteLog(string.Format("**WS** Message = {0}", _msg));
 
-                        foreach (var to in addrs)
+
+                        switch (msg[0])
                         {
-                            switch (to)
-                            {
-                                case "PERFORMER":
-                                    if (performer != null)
-                                    {
-                                        await performer.SendAsync(new ArraySegment<byte>(rcv),
-                                            WebSocketMessageType.Text,
-                                            true,
-                                            System.Threading.CancellationToken.None);
-
-                                    }
-                                    break;
-
-                                case "SERV":
-                                    await EmServer.SendAsync(new ArraySegment<byte>(rcv),
+                            case "PERFORMER":
+                                if (performer != null)
+                                {
+                                    await performer.SendAsync(new ArraySegment<byte>(rcv),
                                         WebSocketMessageType.Text,
                                         true,
                                         System.Threading.CancellationToken.None);
 
-                                    break;
+                                }
+                                break;
 
-                                case "CLIENT":
-                                    /// 各クライアントへ配信
-                                    /// (自分自身でなく、パフォーマーでなく、かつUnityサーバでない時に配信)
-                                    Parallel.ForEach(_client.Where(c => (c != ws && (performer == null || performer != ws) && c != EmServer)),
+                            case "SERV":
+                                // 演技終了
+                                if (msg[1] == "ENDPERFORM")
+                                {
+                                    // 演技終了の通知をブロードキャスト
+                                    Parallel.ForEach(_client.Where(c => (c != ws)),
                                         p => p.SendAsync(new ArraySegment<byte>(rcv),
                                         WebSocketMessageType.Text,
                                         true,
                                         System.Threading.CancellationToken.None));
-                                    break;
 
-                                default:
-                                    throw new ArgumentException("WebSocketの宛先が正しくありません。");
-                            }
+                                    if (msg[2] == "DOSHARE")
+                                    {
+                                        // 共有プログラムの起動
+
+                                    }
+
+                                    Form1.EndEmServer();
+                                    Environment.Exit(0);
+
+                                }
+
+                                await EmServer.SendAsync(new ArraySegment<byte>(rcv),
+                                    WebSocketMessageType.Text,
+                                    true,
+                                    System.Threading.CancellationToken.None);
+
+                                break;
+
+                            case "CLIENT":
+                                /// 各クライアントへ配信
+                                /// (自分自身でなく、パフォーマーでなく、かつUnityサーバでない時に配信)
+                                Parallel.ForEach(_client.Where(c => (c != ws && (performer == null || performer != ws) && c != EmServer)),
+                                    p => p.SendAsync(new ArraySegment<byte>(rcv),
+                                    WebSocketMessageType.Text,
+                                    true,
+                                    System.Threading.CancellationToken.None));
+                                break;
+
+                            default:
+                                throw new ArgumentException("WebSocketの宛先が正しくありません。");
                         }
+                        
 
                     }
                     else if (ret.MessageType == WebSocketMessageType.Close) /// クローズ
@@ -226,7 +246,7 @@ namespace EmServerWS
 
                 case "/check":
                     /// サーバ起動チェック
-                    if (req.RemoteEndPoint.Address == _performer_ip)
+                    if (_performer_ip != null && req.RemoteEndPoint.Address.ToString() == _performer_ip.ToString())
                     {
                         // すでに認証済み
                         msg = "authenticated";

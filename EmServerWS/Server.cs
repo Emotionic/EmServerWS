@@ -77,6 +77,7 @@ namespace EmServerWS
         private WebSocket performer = null;
         private IPAddress _performer_ip = null;
         private WebSocket EmServer = null;
+        private IPAddress _emserver_ip = null;
 
         private readonly string docRoot = Environment.CurrentDirectory + @"\html\";
 
@@ -98,7 +99,7 @@ namespace EmServerWS
                 performer = ws;
                 Debug.WriteLine("Performer client connected.");
             }
-            else if (IPAddress.IsLoopback(remoteIP))
+            else if (_emserver_ip != null && _emserver_ip.ToString() == remoteIP.ToString())
             {
                 EmServer = ws;
                 Debug.WriteLine("EmServer connected.");
@@ -282,6 +283,12 @@ namespace EmServerWS
                     {
                         msg = "ng";
                     }
+
+                    break;
+
+                case "/emserver":
+                    _emserver_ip = req.RemoteEndPoint.Address;
+                    msg = "ok";
 
                     break;
 

@@ -99,7 +99,7 @@ namespace EmServerWS
                 performer = ws;
                 Debug.WriteLine("Performer client connected.");
             }
-            else if (_emserver_ip != null && _emserver_ip.ToString() == remoteIP.ToString())
+            else if (_emserver_ip != null && (_emserver_ip.ToString() == remoteIP.ToString() || IPAddress.IsLoopback(remoteIP)) )
             {
                 EmServer = ws;
                 Debug.WriteLine("EmServer connected.");
@@ -169,10 +169,16 @@ namespace EmServerWS
                                         true,
                                         System.Threading.CancellationToken.None));
 
-                                    if (msg[2] == "DOSHARE")
+                                    if (msg[2] == "DOSHARE" && IPAddress.IsLoopback(_emserver_ip))
                                     {
                                         // 共有プログラムの起動
-
+                                        if (File.Exists(Environment.CurrentDirectory + @"\EmShare\EmShare.exe"))
+                                        {
+                                            var ps = new System.Diagnostics.Process();
+                                            ps.StartInfo.FileName = Environment.CurrentDirectory + @"\EmShare\EmShare.exe";
+                                            ps.Start();
+                                        }
+                                        
                                     }
 
                                     Form1.EndEmServer();
@@ -219,15 +225,30 @@ namespace EmServerWS
             }
 
             /// クライアントを除外する
-            if (ws == performer)
-            {
-                performer = null;
-            }
-
             _client.Remove(ws);
             Connections.Value = _client.Count;
-            ws.Dispose();
 
+            if (ws == performer)　performer = null;
+
+            // サーバの異常終了を検知
+            if (ws == EmServer)
+            {
+                // 演技終了の通知をブロードキャスト
+                var _msg = "ENDPERFORM";
+                var msg = Encoding.UTF8.GetBytes(_msg);
+                Parallel.ForEach(_client.Where(c => c != ws),
+                    p => p.SendAsync(new ArraySegment<byte>(msg),
+                    WebSocketMessageType.Text,
+                    true,
+                    System.Threading.CancellationToken.None));
+
+                // EmServerWSを終了
+                Form1.EndEmServer();
+                Environment.Exit(0);
+
+            }
+
+            ws.Dispose();
         }
 
         private async void ProcessHttp(HttpListenerRequest req, HttpListenerResponse res)

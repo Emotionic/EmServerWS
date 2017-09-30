@@ -17,7 +17,17 @@ namespace EmServerWS
             InitializeComponent();
 
             // Get IP
-            lab_IP.Text = GetIP().ToString();
+            var ip = GetIP();
+            if (ip == null)
+            {
+                lab_IP.ForeColor = Color.Red;
+                lab_IP.Font = new Font("メイリオ", 12, FontStyle.Bold);
+                lab_IP.Text = "<<< IPアドレスを取得できませんでした >>>";
+            }
+            else
+            {
+                lab_IP.Text = ip.ToString();
+            }
 
             // Generate pin
             var rnd = new Random(Environment.TickCount + 810);
@@ -39,7 +49,10 @@ namespace EmServerWS
 
             _server.LatestLog.mChanged += value =>
             {
-                tb_Log.Text = $"[{DateTime.Now}] {value}" + Environment.NewLine + tb_Log.Text;
+                tb_Log.SelectionStart = 0;
+                tb_Log.SelectionFont = new Font("メイリオ", 9, FontStyle.Regular);
+                tb_Log.SelectionColor = Color.Black;
+                tb_Log.SelectedText = $"[{DateTime.Now}] {value}\n";
             };
 
             _server.Connections.mChanged += value =>
@@ -57,7 +70,9 @@ namespace EmServerWS
                 ps.Start();
             } else
             {
-                MessageBox.Show("EmServer(Unity)を検出できませんでした。\nサーバー単体で起動します。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                tb_Log.SelectionFont = new Font("メイリオ", 9, FontStyle.Bold | FontStyle.Underline);
+                tb_Log.SelectionColor = Color.Red;
+                tb_Log.SelectedText = "EmServer(Unity)を検出できませんでした。\nサーバー単体で起動します。";
             }
 
         }
@@ -70,12 +85,6 @@ namespace EmServerWS
             foreach (var p in ps)
             {
                 p.CloseMainWindow();
-                p.WaitForExit(10000);
-                if (!p.HasExited)
-                {
-                    MessageBox.Show("Unityが終了しませんでした。\n手動でUnityを終了してください。", "終了", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                }
-
             }
         }
 
@@ -83,11 +92,12 @@ namespace EmServerWS
         private Bitmap QR_Performer;
         private Bitmap QR_Audience;
 
+        private int _debug_count = 0;
+
         private IPAddress GetIP()
         {
             var ip = IPAddress.None;
             var interfaces = NetworkInterface.GetAllNetworkInterfaces();
-            var hit = false;
 
             foreach (var adapter in interfaces)
             {
@@ -102,20 +112,14 @@ namespace EmServerWS
                 {
                     if (unicast.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(unicast.Address))
                     {
-                        // IPv4アドレス
-                        ip = unicast.Address;
-                        if (adapter.Name.Contains("イーサネット") || adapter.Name.Contains("ワイヤレス"))
-                        {
-                            hit = true;
-                            break;
-                        }
+                        // 仮想マシンのアダプター等を除外する
+                        if (adapter.Name.Contains("Virtual")) continue;
+                        return unicast.Address;
                     }
                 }
-
-                if (hit) break;
             }
 
-            return ip;
+            return null;
         }
 
         private Bitmap CreateQR(bool _isPerformer, string _ip, string _pin)
@@ -165,5 +169,35 @@ namespace EmServerWS
             }
         }
 
+        private void btnClsLog_Click(object sender, EventArgs e)
+        {
+            tb_Log.Clear();
+        }
+
+        private void picBox_QR_Click(object sender, EventArgs e)
+        {
+            check_AudienceQR.Checked = !check_AudienceQR.Checked;
+        }
+
+        private void btnToggleTopMost_Click(object sender, EventArgs e)
+        {
+            this.TopMost = !this.TopMost;
+            btnToggleTopMost.Text = this.TopMost ? "最前面解除" : "最前面にする";
+        }
+
+        private void picboc_Emotionic_Click(object sender, EventArgs e)
+        {
+            if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+            {
+                _debug_count++;
+                if (_debug_count >= 3)
+                {
+                    var qrdiag = new QRDiag();
+                    qrdiag.ShowDialog();
+
+                    _debug_count = 0;
+                }
+            }
+        }
     }
 }

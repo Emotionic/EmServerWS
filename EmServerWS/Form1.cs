@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -7,6 +8,7 @@ using System.Windows.Forms;
 
 using ZXing;
 using ZXing.QrCode;
+using System.Text;
 
 namespace EmServerWS
 {
@@ -37,6 +39,16 @@ namespace EmServerWS
                 pin *= 10;
                 pin += rnd.Next(0, 10);
             }
+
+            if (File.Exists(_fixedPinFilename))
+            {
+                using (var sr = new StreamReader(_fixedPinFilename, Encoding.UTF8))
+                {
+                    var _pin = sr.ReadToEnd();
+                    pin = int.Parse(_pin);
+                }
+            }
+
             lab_Pin.Text = pin.ToString("0000");
 
             // Create 
@@ -92,6 +104,8 @@ namespace EmServerWS
         private Bitmap QR_Performer;
         private Bitmap QR_Audience;
 
+        private string _fixedPinFilename = Environment.CurrentDirectory + @"\.fixed_pin";
+
         private int _debug_count = 0;
 
         private IPAddress GetIP()
@@ -113,7 +127,7 @@ namespace EmServerWS
                     if (unicast.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(unicast.Address))
                     {
                         // 仮想マシンのアダプター等を除外する
-                        if (adapter.Name.Contains("Virtual")) continue;
+                        if (adapter.Description.Contains("Virtual")) continue;
                         return unicast.Address;
                     }
                 }

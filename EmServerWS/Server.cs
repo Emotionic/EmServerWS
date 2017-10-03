@@ -169,6 +169,9 @@ namespace EmServerWS
                                         true,
                                         System.Threading.CancellationToken.None));
 
+                                    // EmServer側で切断判定になってしまうのでウェイトを入れる
+                                    System.Threading.Thread.Sleep(2 * 1000);
+
                                     if (msg[2] == "DOSHARE" && IPAddress.IsLoopback(_emserver_ip))
                                     {
                                         // 共有プログラムの起動
@@ -181,7 +184,6 @@ namespace EmServerWS
                                         
                                     }
 
-                                    Form1.EndEmServer();
                                     Environment.Exit(0);
 
                                 }
@@ -242,8 +244,6 @@ namespace EmServerWS
                     true,
                     System.Threading.CancellationToken.None));
 
-                // EmServerWSを終了
-                Form1.EndEmServer();
                 Environment.Exit(0);
 
             }

@@ -89,17 +89,6 @@ namespace EmServerWS
 
         }
 
-        public static void EndEmServer()
-        {
-            //EmServerのプロセスを取得
-            var ps = System.Diagnostics.Process.GetProcessesByName("EmServer");
-
-            foreach (var p in ps)
-            {
-                p.CloseMainWindow();
-            }
-        }
-
         private Server _server;
         private Bitmap QR_Performer;
         private Bitmap QR_Audience;
@@ -162,7 +151,13 @@ namespace EmServerWS
             var dlg = MessageBox.Show("EmServerWSを終了しますか？\n(EmServer(Unity)も同時終了します。)", "終了", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             if (dlg == DialogResult.OK)
             {
-                EndEmServer();
+                //EmServerのプロセスを終了
+                var ps = System.Diagnostics.Process.GetProcessesByName("EmServer");
+
+                foreach (var p in ps)
+                {
+                    p.CloseMainWindow();
+                }
             }
             else
             {

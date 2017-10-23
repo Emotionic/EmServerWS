@@ -185,7 +185,9 @@ namespace EmServerWS
                                 break;
 
                             case "SERV":
-                                // 演技終了
+                                if (EmServer == null) break;
+
+                                // 演技終了時
                                 if (msg[1] == "ENDPERFORM")
                                 {
                                     // 演技終了の通知をブロードキャスト
@@ -264,9 +266,24 @@ namespace EmServerWS
 
             /// クライアントを除外する
             _client.Remove(ws);
-            TotalConnections.Value = _client.Count;
 
             if (ws == performer)　performer = null;
+            if (ws == EmKinectJoin)
+            {
+                EmKinectJoin = null;
+                EmKinectJoinConnected.Value = false;
+            }
+
+            // 情報の更新
+            TotalConnections.Value = _client.Count;
+            _ClientConnections = _client.Count;
+            if (performer != null)
+                _ClientConnections--;
+            if (EmServer != null)
+                _ClientConnections--;
+            if (EmKinectJoin != null)
+                _ClientConnections--;
+            ClientConnections.Value = _ClientConnections;
 
             // サーバの異常終了を検知
             if (ws == EmServer)

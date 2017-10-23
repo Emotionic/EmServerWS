@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -18,7 +20,26 @@ namespace EmServerWS
         {
             InitializeComponent();
 
-            // Get IP
+            // ステータスランプ画像の生成
+            lamps = new List<Bitmap>();
+
+            // Red
+            lamps.Add(new Bitmap(20, 20));
+            var g = Graphics.FromImage(lamps[0]);
+            g.FillRectangle(Brushes.Red, g.VisibleClipBounds);
+            g.Dispose();
+
+            // Green
+            lamps.Add(new Bitmap(20, 20));
+            g = Graphics.FromImage(lamps[1]);
+            g.FillRectangle(Brushes.Lime, g.VisibleClipBounds);
+            g.Dispose();
+
+            // ランプに画像を設定
+            picBox_ServLamp.Image = lamps[0];
+            picBox_KJLamp.Image = lamps[0];
+
+            // IPアドレスを取得
             var ip = GetIP();
             if (ip == null)
             {
@@ -31,7 +52,7 @@ namespace EmServerWS
                 lab_IP.Text = ip.ToString();
             }
 
-            // Generate pin
+            // PINコードを生成
             var rnd = new Random(Environment.TickCount + 810);
             int pin = 0;
             for (var i = 0; i < 4; i++)
@@ -51,14 +72,16 @@ namespace EmServerWS
 
             lab_Pin.Text = pin.ToString("0000");
 
-            // Create 
+            // QRコードの生成
             QR_Performer = CreateQR(true, lab_IP.Text, lab_Pin.Text);
             QR_Audience = CreateQR(false, lab_IP.Text, lab_Pin.Text);
-            picBox_QR.Image = QR_Performer;
+            picBox_QR_P.Image = QR_Performer;
+            picBox_QR_A.Image = QR_Audience;
 
-            // Start server
+            // サーバ初期化
             _server = new Server(pin, lab_IP.Text, QR_Audience);
 
+            // イベント登録
             _server.LatestLog.mChanged += value =>
             {
                 tb_Log.SelectionStart = 0;
@@ -67,15 +90,31 @@ namespace EmServerWS
                 tb_Log.SelectedText = $"[{DateTime.Now}] {value}\n";
             };
 
-            _server.Connections.mChanged += value =>
+            _server.TotalConnections.mChanged += value =>
             {
-                lab_WSCount.Text = "接続数：" + value;
+                lab_WSCount.Text = value.ToString();
             };
 
+            _server.ClientConnections.mChanged += value =>
+            {
+                lab_ClientCount.Text = value.ToString();
+            };
+
+            _server.EmServerConnected.mChanged += value =>
+            {
+                picBox_ServLamp.Image = value ? lamps[1] : lamps[0];
+            };
+
+            _server.EmKinectJoinConnected.mChanged += value =>
+            {
+                picBox_KJLamp.Image = value ? lamps[1] : lamps[0];
+            };
+
+            // サーバの起動
             _server.Start();
 
             // EmServer(Unity)の起動
-            if (System.IO.File.Exists(Environment.CurrentDirectory + @"\EmServer\EmServer.exe"))
+            if (File.Exists(Environment.CurrentDirectory + @"\EmServer\EmServer.exe"))
             {
                 var ps = new System.Diagnostics.Process();
                 ps.StartInfo.FileName = Environment.CurrentDirectory + @"\EmServer\EmServer.exe";
@@ -92,6 +131,8 @@ namespace EmServerWS
         private Server _server;
         private Bitmap QR_Performer;
         private Bitmap QR_Audience;
+
+        private List<Bitmap> lamps; // 0: Red, 1: Green
 
         private string _fixedPinFilename = Environment.CurrentDirectory + @"\.fixed_pin";
 
@@ -165,27 +206,9 @@ namespace EmServerWS
             }
         }
 
-        private void check_AudienceQR_CheckedChanged(object sender, EventArgs e)
-        {
-            if (check_AudienceQR.Checked)
-            {
-                picBox_QR.Image = QR_Audience;
-                lab_descQR.Text = "観客用QR";
-            } else
-            {
-                picBox_QR.Image = QR_Performer;
-                lab_descQR.Text = "パフォーマー用QR";
-            }
-        }
-
         private void btnClsLog_Click(object sender, EventArgs e)
         {
             tb_Log.Clear();
-        }
-
-        private void picBox_QR_Click(object sender, EventArgs e)
-        {
-            check_AudienceQR.Checked = !check_AudienceQR.Checked;
         }
 
         private void btnToggleTopMost_Click(object sender, EventArgs e)

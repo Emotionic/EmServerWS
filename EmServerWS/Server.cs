@@ -29,7 +29,10 @@ namespace EmServerWS
             QR = _qr;
             port = _port;
 
-            Connections = new Detectable<int>();
+            TotalConnections = new Detectable<int>(0);
+            ClientConnections = new Detectable<int>(0);
+            EmServerConnected = new Detectable<bool>(false);
+            EmKinectJoinConnected = new Detectable<bool>(false);
             LatestLog = new Detectable<string>("");
         }
 
@@ -60,7 +63,10 @@ namespace EmServerWS
 
         }
 
-        public Detectable<int> Connections { get; set; } // 接続数
+        public Detectable<int> TotalConnections { get; set; } // 総接続数
+        public Detectable<int> ClientConnections { get; set; } // 観客接続数
+        public Detectable<bool> EmServerConnected { get; set; } // EmServer接続状態
+        public Detectable<bool> EmKinectJoinConnected { get; set; } // EmKinectJoin接続状態
         public Detectable<string> LatestLog { get; set; } // 最新のログ
 
         private void WriteLog(string _log)
@@ -74,10 +80,15 @@ namespace EmServerWS
         private Bitmap QR;
 
         private List<WebSocket> _client { get; set; }
+
         private WebSocket performer = null;
         private IPAddress _performer_ip = null;
+
         private WebSocket EmServer = null;
         private IPAddress _emserver_ip = null;
+
+        private WebSocket EmKinectJoin = null;
+        private IPAddress _emkinectjoin_ip = null;
 
         private readonly string docRoot = Environment.CurrentDirectory + @"\html\";
 
@@ -92,17 +103,19 @@ namespace EmServerWS
 
             /// 新規クライアントを追加
             _client.Add(ws);
-            Connections.Value = _client.Count;
 
             if (_performer_ip != null && _performer_ip.ToString() == remoteIP.ToString())
             {
                 performer = ws;
                 Debug.WriteLine("Performer client connected.");
+                WriteLog("Performer client connected.");
             }
             else if (_emserver_ip != null && (_emserver_ip.ToString() == remoteIP.ToString() || IPAddress.IsLoopback(remoteIP)) )
             {
                 EmServer = ws;
                 Debug.WriteLine("EmServer connected.");
+                WriteLog("EmServer connected.");
+                EmServerConnected.Value = true;
 
                 // IPアドレスの通知
                 var ip_notice = "SERV\nIP\n" + ip + "\n";
@@ -122,8 +135,21 @@ namespace EmServerWS
                                          true,
                                          System.Threading.CancellationToken.None);
 
+            } else if (_emkinectjoin_ip != null && _emkinectjoin_ip.ToString() == remoteIP.ToString())
+            {
+                EmKinectJoin = ws;
+                Debug.WriteLine("EmKinectJoin connected.");
+                WriteLog("EmKinectJoin connected.");
+                EmKinectJoinConnected.Value = true;
             }
-                
+
+            TotalConnections.Value = _client.Count;
+            var _ClientConnections = _client.Count;
+            if (performer != null) _ClientConnections--;
+            if (EmServer != null) _ClientConnections--;
+            if (EmKinectJoin != null) _ClientConnections--;
+            ClientConnections.Value = _ClientConnections;
+
             /// WebSocketの送受信ループ
             while (ws.State == WebSocketState.Open)
             {
@@ -205,6 +231,16 @@ namespace EmServerWS
                                     System.Threading.CancellationToken.None));
                                 break;
 
+                            case "KINECTJOIN":
+                                if (EmKinectJoin == null) break;
+
+                                await EmKinectJoin.SendAsync(new ArraySegment<byte>(rcv),
+                                    WebSocketMessageType.Text,
+                                    true,
+                                    System.Threading.CancellationToken.None);
+
+                                break;
+
                             default:
                                 throw new ArgumentException("WebSocketの宛先が正しくありません。");
                         }
@@ -228,7 +264,7 @@ namespace EmServerWS
 
             /// クライアントを除外する
             _client.Remove(ws);
-            Connections.Value = _client.Count;
+            TotalConnections.Value = _client.Count;
 
             if (ws == performer)　performer = null;
 
@@ -309,6 +345,12 @@ namespace EmServerWS
 
                 case "/emserver":
                     _emserver_ip = req.RemoteEndPoint.Address;
+                    msg = "ok";
+
+                    break;
+
+                case "/emkinectjoin":
+                    _emkinectjoin_ip = req.RemoteEndPoint.Address;
                     msg = "ok";
 
                     break;
